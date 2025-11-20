@@ -18,19 +18,26 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   bool isLoading = true;
   String userName = 'Usuario';
   String userEmail = 'usuario@ejemplo.com';
+  int? _userId;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
-    _loadUserData();
-    _loadData();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _loadUserData();
+    await _loadData();
   }
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
+      _userId = prefs.getInt('userId');
       userName = prefs.getString('userName') ?? 'Usuario';
       userEmail = prefs.getString('userEmail') ?? 'usuario@ejemplo.com';
     });
@@ -43,11 +50,23 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   }
 
   Future<void> _loadData() async {
+    if (_userId == null) {
+      if (!mounted) return;
+      setState(() {
+        favorites = [];
+        userRecipes = [];
+        isLoading = false;
+      });
+      return;
+    }
+
+    if (!mounted) return;
     setState(() => isLoading = true);
-    
-    final favs = await _dbHelper.getFavorites();
-    final recipes = await _dbHelper.getUserRecipes();
-    
+
+    final favs = await _dbHelper.getFavorites(_userId!);
+    final recipes = await _dbHelper.getUserRecipes(_userId!);
+
+    if (!mounted) return;
     setState(() {
       favorites = favs;
       userRecipes = recipes;
@@ -201,6 +220,12 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          if (_userId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Inicia sesión para agregar recetas')),
+            );
+            return;
+          }
           Navigator.of(context).pushNamed('/new-recipe').then((_) => _loadData());
         },
         backgroundColor: Colors.white,
@@ -284,6 +309,18 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   }
 
   Widget _buildUserRecipesList() {
+    if (_userId == null) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Text(
+            'Inicia sesión para ver tus recetas',
+            style: TextStyle(color: Colors.white38, fontSize: 16),
+          ),
+        ),
+      );
+    }
+
     if (isLoading) {
       return const Center(child: CircularProgressIndicator(color: Colors.white));
     }
@@ -311,6 +348,18 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   }
 
   Widget _buildFavoritesList() {
+    if (_userId == null) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Text(
+            'Inicia sesión para ver tus favoritos',
+            style: TextStyle(color: Colors.white38, fontSize: 16),
+          ),
+        ),
+      );
+    }
+
     if (isLoading) {
       return const Center(child: CircularProgressIndicator(color: Colors.white));
     }
@@ -492,7 +541,9 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   Widget _buildFavoriteCard(Meal meal) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed('/recipe', arguments: {'mealId': meal.id}).then((_) => _loadData());
+        Navigator.of(context)
+            .pushNamed('/recipe', arguments: {'mealId': meal.id})
+            .then((_) => _loadData());
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -606,7 +657,13 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
           ),
           ElevatedButton(
             onPressed: () async {
-              await _dbHelper.deleteUserRecipe(recipeId);
+              if (_userId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Inicia sesión para eliminar recetas')),
+                );
+                return;
+              }
+              await _dbHelper.deleteUserRecipe(recipeId, _userId!);
               Navigator.pop(context);
               _loadData();
               if (mounted) {

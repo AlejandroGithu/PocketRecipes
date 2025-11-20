@@ -3,6 +3,7 @@ import '../services/meal_api_service.dart';
 import '../models/meal.dart';
 import '../services/database_helper.dart';
 import 'ingredients_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecipesListScreen extends StatefulWidget {
   const RecipesListScreen({super.key});
@@ -21,11 +22,21 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool isSearching = false;
   Map<String, bool> favoritesStatus = {};
+  int? _userId;
 
   @override
   void initState() {
     super.initState();
-    _loadRandomMeals();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _userId = prefs.getInt('userId');
+    });
+    await _loadRandomMeals();
   }
 
   @override
@@ -35,10 +46,19 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
   }
 
   Future<void> _loadFavoritesStatus() async {
+    if (_userId == null) {
+      if (!mounted) return;
+      setState(() {
+        favoritesStatus = {for (var meal in meals) meal.id: false};
+      });
+      return;
+    }
+
     Map<String, bool> status = {};
     for (var meal in meals) {
-      status[meal.id] = await _dbHelper.isFavorite(meal.id);
+      status[meal.id] = await _dbHelper.isFavorite(meal.id, _userId!);
     }
+    if (!mounted) return;
     setState(() {
       favoritesStatus = status;
     });
@@ -52,6 +72,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       isSearching = false;
     });
     final randomMeals = await _apiService.getRandomMeals(6);
+    if (!mounted) return;
     setState(() {
       meals = randomMeals;
       isLoading = false;
@@ -79,6 +100,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       }
     }
     
+    if (!mounted) return;
     setState(() {
       meals = filtered;
       isLoading = false;
@@ -102,6 +124,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       if (fullMeal != null) filtered.add(fullMeal);
     }
     
+    if (!mounted) return;
     setState(() {
       meals = filtered;
       isLoading = false;
@@ -123,6 +146,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
     });
     
     final results = await _apiService.searchMealByName(query);
+    if (!mounted) return;
     setState(() {
       meals = results;
       isLoading = false;
@@ -164,17 +188,26 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
   }
 
   Future<void> _toggleFavorite(Meal meal) async {
+    if (_userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inicia sesión para gestionar favoritos'), duration: Duration(seconds: 1)),
+        );
+      }
+      return;
+    }
+
     final isFav = favoritesStatus[meal.id] ?? false;
     
     if (isFav) {
-      await _dbHelper.removeFavorite(meal.id);
+      await _dbHelper.removeFavorite(meal.id, _userId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Eliminado de favoritos'), duration: Duration(seconds: 1)),
         );
       }
     } else {
-      await _dbHelper.addFavorite(meal);
+      await _dbHelper.addFavorite(meal, _userId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Agregado a favoritos'), duration: Duration(seconds: 1)),
@@ -182,6 +215,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       }
     }
     
+    if (!mounted) return;
     setState(() {
       favoritesStatus[meal.id] = !isFav;
     });
@@ -417,7 +451,9 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
     
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed('/recipe', arguments: {'mealId': meal.id});
+        Navigator.of(context)
+            .pushNamed('/recipe', arguments: {'mealId': meal.id})
+            .then((_) => _loadFavoritesStatus());
       },
       child: Container(
         height: 200,

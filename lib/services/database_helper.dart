@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2, // Incrementamos la versión
+      version: 3, // Incrementamos la versión para soportar datos por usuario
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -38,12 +38,15 @@ class DatabaseHelper {
         )
       ''');
     }
+
+    if (oldVersion < 3) {
+      await _dropUserContentTables(db);
+      await _createUserContentTables(db);
+    }
   }
 
   Future _createDB(Database db, int version) async {
-    const idType = 'TEXT PRIMARY KEY';
-    const textType = 'TEXT NOT NULL';
-    const textTypeNullable = 'TEXT';
+  const textType = 'TEXT NOT NULL';
 
     // Tabla de usuarios
     await db.execute('''
@@ -56,10 +59,17 @@ class DatabaseHelper {
       )
     ''');
 
-    // Tabla de recetas favoritas
+    await _createUserContentTables(db);
+  }
+
+  Future<void> _createUserContentTables(Database db) async {
+    const textType = 'TEXT NOT NULL';
+    const textTypeNullable = 'TEXT';
+
     await db.execute('''
       CREATE TABLE favorites (
-        id $idType,
+        id TEXT NOT NULL,
+        userId INTEGER NOT NULL,
         name $textType,
         category $textTypeNullable,
         area $textTypeNullable,
@@ -67,56 +77,68 @@ class DatabaseHelper {
         imageUrl $textType,
         youtubeUrl $textTypeNullable,
         tags $textTypeNullable,
-        createdAt TEXT NOT NULL
+        createdAt TEXT NOT NULL,
+        PRIMARY KEY (id, userId),
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
 
-    // Tabla de ingredientes de favoritos
     await db.execute('''
       CREATE TABLE favorite_ingredients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         mealId TEXT NOT NULL,
+        userId INTEGER NOT NULL,
         ingredient TEXT NOT NULL,
         measure TEXT,
-        FOREIGN KEY (mealId) REFERENCES favorites (id) ON DELETE CASCADE
+        FOREIGN KEY (mealId, userId) REFERENCES favorites (id, userId) ON DELETE CASCADE
       )
     ''');
 
-    // Tabla de recetas del usuario
     await db.execute('''
       CREATE TABLE user_recipes (
-        id TEXT PRIMARY KEY,
+        id TEXT NOT NULL,
+        userId INTEGER NOT NULL,
         name $textType,
         description $textTypeNullable,
         imageUrl $textTypeNullable,
         time $textTypeNullable,
         servings $textTypeNullable,
         difficulty $textTypeNullable,
-        createdAt TEXT NOT NULL
+        createdAt TEXT NOT NULL,
+        PRIMARY KEY (id, userId),
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
 
-    // Tabla de ingredientes de recetas del usuario
     await db.execute('''
       CREATE TABLE user_recipe_ingredients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipeId TEXT NOT NULL,
+        userId INTEGER NOT NULL,
         ingredient TEXT NOT NULL,
         measure TEXT,
-        FOREIGN KEY (recipeId) REFERENCES user_recipes (id) ON DELETE CASCADE
+        FOREIGN KEY (recipeId, userId) REFERENCES user_recipes (id, userId) ON DELETE CASCADE
       )
     ''');
 
-    // Tabla de pasos de recetas del usuario
     await db.execute('''
       CREATE TABLE user_recipe_steps (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipeId TEXT NOT NULL,
+        userId INTEGER NOT NULL,
         stepNumber INTEGER NOT NULL,
         description TEXT NOT NULL,
-        FOREIGN KEY (recipeId) REFERENCES user_recipes (id) ON DELETE CASCADE
+        FOREIGN KEY (recipeId, userId) REFERENCES user_recipes (id, userId) ON DELETE CASCADE
       )
     ''');
+  }
+
+  Future<void> _dropUserContentTables(Database db) async {
+    await db.execute('DROP TABLE IF EXISTS favorite_ingredients');
+    await db.execute('DROP TABLE IF EXISTS favorites');
+    await db.execute('DROP TABLE IF EXISTS user_recipe_ingredients');
+    await db.execute('DROP TABLE IF EXISTS user_recipe_steps');
+    await db.execute('DROP TABLE IF EXISTS user_recipes');
   }
 
   // USUARIOS - LOGIN Y REGISTRO
@@ -169,13 +191,20 @@ class DatabaseHelper {
   }
 
   // FAVORITOS
-  Future<void> addFavorite(Meal meal) async {
+  Future<void> addFavorite(Meal meal, int userId) async {
     final db = await instance.database;
     
+    await db.delete(
+      'favorite_ingredients',
+      where: 'mealId = ? AND userId = ?',
+      whereArgs: [meal.id, userId],
+    );
+
     await db.insert(
       'favorites',
       {
         'id': meal.id,
+        'userId': userId,
         'name': meal.name,
         'category': meal.category,
         'area': meal.area,
@@ -192,38 +221,52 @@ class DatabaseHelper {
     for (var entry in meal.ingredients.entries) {
       await db.insert('favorite_ingredients', {
         'mealId': meal.id,
+        'userId': userId,
         'ingredient': entry.key,
         'measure': entry.value,
       });
     }
   }
 
-  Future<void> removeFavorite(String mealId) async {
+  Future<void> removeFavorite(String mealId, int userId) async {
     final db = await instance.database;
-    await db.delete('favorites', where: 'id = ?', whereArgs: [mealId]);
-    await db.delete('favorite_ingredients', where: 'mealId = ?', whereArgs: [mealId]);
+    await db.delete(
+      'favorites',
+      where: 'id = ? AND userId = ?',
+      whereArgs: [mealId, userId],
+    );
+    await db.delete(
+      'favorite_ingredients',
+      where: 'mealId = ? AND userId = ?',
+      whereArgs: [mealId, userId],
+    );
   }
 
-  Future<bool> isFavorite(String mealId) async {
+  Future<bool> isFavorite(String mealId, int userId) async {
     final db = await instance.database;
     final result = await db.query(
       'favorites',
-      where: 'id = ?',
-      whereArgs: [mealId],
+      where: 'id = ? AND userId = ?',
+      whereArgs: [mealId, userId],
     );
     return result.isNotEmpty;
   }
 
-  Future<List<Meal>> getFavorites() async {
+  Future<List<Meal>> getFavorites(int userId) async {
     final db = await instance.database;
-    final result = await db.query('favorites', orderBy: 'createdAt DESC');
+    final result = await db.query(
+      'favorites',
+      where: 'userId = ?',
+      whereArgs: [userId],
+      orderBy: 'createdAt DESC',
+    );
 
     List<Meal> favorites = [];
     for (var row in result) {
       final ingredients = await db.query(
         'favorite_ingredients',
-        where: 'mealId = ?',
-        whereArgs: [row['id']],
+        where: 'mealId = ? AND userId = ?',
+        whereArgs: [row['id'], userId],
       );
 
       Map<String, String> ingredientsMap = {};
@@ -248,12 +291,13 @@ class DatabaseHelper {
   }
 
   // RECETAS DEL USUARIO
-  Future<String> addUserRecipe(Map<String, dynamic> recipe) async {
+  Future<String> addUserRecipe(Map<String, dynamic> recipe, int userId) async {
     final db = await instance.database;
     final id = DateTime.now().millisecondsSinceEpoch.toString();
 
     await db.insert('user_recipes', {
       'id': id,
+      'userId': userId,
       'name': recipe['name'],
       'description': recipe['description'],
       'imageUrl': recipe['imageUrl'],
@@ -268,6 +312,7 @@ class DatabaseHelper {
       for (var ingredient in recipe['ingredients'] as List) {
         await db.insert('user_recipe_ingredients', {
           'recipeId': id,
+          'userId': userId,
           'ingredient': ingredient['name'],
           'measure': ingredient['measure'],
         });
@@ -280,6 +325,7 @@ class DatabaseHelper {
       for (var step in recipe['steps'] as List) {
         await db.insert('user_recipe_steps', {
           'recipeId': id,
+          'userId': userId,
           'stepNumber': stepNumber++,
           'description': step,
         });
@@ -289,22 +335,27 @@ class DatabaseHelper {
     return id;
   }
 
-  Future<List<Map<String, dynamic>>> getUserRecipes() async {
+  Future<List<Map<String, dynamic>>> getUserRecipes(int userId) async {
     final db = await instance.database;
-    final result = await db.query('user_recipes', orderBy: 'createdAt DESC');
+    final result = await db.query(
+      'user_recipes',
+      where: 'userId = ?',
+      whereArgs: [userId],
+      orderBy: 'createdAt DESC',
+    );
 
     List<Map<String, dynamic>> recipes = [];
     for (var row in result) {
       final ingredients = await db.query(
         'user_recipe_ingredients',
-        where: 'recipeId = ?',
-        whereArgs: [row['id']],
+        where: 'recipeId = ? AND userId = ?',
+        whereArgs: [row['id'], userId],
       );
 
       final steps = await db.query(
         'user_recipe_steps',
-        where: 'recipeId = ?',
-        whereArgs: [row['id']],
+        where: 'recipeId = ? AND userId = ?',
+        whereArgs: [row['id'], userId],
         orderBy: 'stepNumber',
       );
 
@@ -325,12 +376,12 @@ class DatabaseHelper {
     return recipes;
   }
 
-  Future<Map<String, dynamic>?> getUserRecipeById(String id) async {
+  Future<Map<String, dynamic>?> getUserRecipeById(String id, int userId) async {
     final db = await instance.database;
     final result = await db.query(
       'user_recipes',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND userId = ?',
+      whereArgs: [id, userId],
     );
 
     if (result.isEmpty) return null;
@@ -338,14 +389,14 @@ class DatabaseHelper {
     final row = result.first;
     final ingredients = await db.query(
       'user_recipe_ingredients',
-      where: 'recipeId = ?',
-      whereArgs: [id],
+      where: 'recipeId = ? AND userId = ?',
+      whereArgs: [id, userId],
     );
 
     final steps = await db.query(
       'user_recipe_steps',
-      where: 'recipeId = ?',
-      whereArgs: [id],
+      where: 'recipeId = ? AND userId = ?',
+      whereArgs: [id, userId],
       orderBy: 'stepNumber',
     );
 
@@ -363,11 +414,23 @@ class DatabaseHelper {
     };
   }
 
-  Future<void> deleteUserRecipe(String id) async {
+  Future<void> deleteUserRecipe(String id, int userId) async {
     final db = await instance.database;
-    await db.delete('user_recipes', where: 'id = ?', whereArgs: [id]);
-    await db.delete('user_recipe_ingredients', where: 'recipeId = ?', whereArgs: [id]);
-    await db.delete('user_recipe_steps', where: 'recipeId = ?', whereArgs: [id]);
+    await db.delete(
+      'user_recipes',
+      where: 'id = ? AND userId = ?',
+      whereArgs: [id, userId],
+    );
+    await db.delete(
+      'user_recipe_ingredients',
+      where: 'recipeId = ? AND userId = ?',
+      whereArgs: [id, userId],
+    );
+    await db.delete(
+      'user_recipe_steps',
+      where: 'recipeId = ? AND userId = ?',
+      whereArgs: [id, userId],
+    );
   }
 
   Future close() async {

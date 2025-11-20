@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserRecipeDetailScreen extends StatefulWidget {
   const UserRecipeDetailScreen({super.key});
@@ -13,6 +14,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
   Map<String, dynamic>? recipe;
   bool isLoading = true;
+  int? _userId;
 
   @override
   void initState() {
@@ -27,16 +29,21 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
   }
 
   Future<void> _loadRecipeDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getInt('userId');
+
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final recipeId = args?['recipeId'] as String?;
     
-    if (recipeId == null) {
+    if (recipeId == null || _userId == null) {
+      if (!mounted) return;
       setState(() => isLoading = false);
       return;
     }
 
-    final loadedRecipe = await _dbHelper.getUserRecipeById(recipeId);
+    final loadedRecipe = await _dbHelper.getUserRecipeById(recipeId, _userId!);
     
+    if (!mounted) return;
     setState(() {
       recipe = loadedRecipe;
       isLoading = false;

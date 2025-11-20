@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NewRecipeScreen extends StatefulWidget {
   const NewRecipeScreen({super.key});
@@ -87,6 +88,18 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
       return;
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+
+    if (userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inicia sesión para publicar recetas')),
+        );
+      }
+      return;
+    }
+
     if (_ingredients.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Agrega al menos un ingrediente')),
@@ -111,7 +124,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
         'difficulty': _selectedDifficulty,
         'ingredients': _ingredients,
         'steps': _steps,
-      });
+      }, userId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

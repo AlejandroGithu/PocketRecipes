@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/meal_api_service.dart';
 import '../models/meal.dart';
 import '../services/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   const RecipeDetailScreen({super.key});
@@ -17,6 +18,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
   Meal? meal;
   bool isLoading = true;
   bool isFavorite = false;
+  int? _userId;
 
   @override
   void initState() {
@@ -31,6 +33,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
   }
 
   Future<void> _loadMealDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getInt('userId');
+    if (!mounted) return;
+
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final mealId = args?['mealId'] as String?;
     
@@ -40,7 +46,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
     }
 
     final loadedMeal = await _apiService.getMealById(mealId);
-    final favoriteStatus = await _dbHelper.isFavorite(mealId);
+    final favoriteStatus = _userId != null
+        ? await _dbHelper.isFavorite(mealId, _userId!)
+        : false;
     
     setState(() {
       meal = loadedMeal;
@@ -52,12 +60,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
   Future<void> _toggleFavorite() async {
     if (meal == null) return;
 
+    if (_userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Inicia sesión para administrar favoritos'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() {
       isFavorite = !isFavorite;
     });
 
     if (isFavorite) {
-      await _dbHelper.addFavorite(meal!);
+      await _dbHelper.addFavorite(meal!, _userId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -67,7 +87,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
         );
       }
     } else {
-      await _dbHelper.removeFavorite(meal!.id);
+      await _dbHelper.removeFavorite(meal!.id, _userId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
