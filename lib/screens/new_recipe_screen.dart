@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -22,15 +23,32 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _servingsController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
-  
+
+  final TextEditingController _ingredientNameController = TextEditingController();
+  final TextEditingController _ingredientQuantityController = TextEditingController();
+  final TextEditingController _stepController = TextEditingController();
+
   final List<Map<String, String>> _ingredients = [];
   final List<String> _steps = [];
+  final List<String> _unitOptions = [
+    'g',
+    'kg',
+    'mg',
+    'ml',
+    'l',
+    'taza',
+    'cucharada',
+    'cucharadita',
+    'pieza',
+    'porción',
+  ];
   String _selectedDifficulty = 'Facil';
+  String _selectedUnit = 'g';
   File? _selectedImage;
-  
-  final TextEditingController _ingredientNameController = TextEditingController();
-  final TextEditingController _ingredientMeasureController = TextEditingController();
-  final TextEditingController _stepController = TextEditingController();
+
+  String? _ingredientError;
+  String? _servingsError;
+  String? _formError;
 
   @override
   void dispose() {
@@ -39,46 +57,64 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     _timeController.dispose();
     _servingsController.dispose();
     _ingredientNameController.dispose();
-    _ingredientMeasureController.dispose();
+    _ingredientQuantityController.dispose();
     _stepController.dispose();
     super.dispose();
   }
 
   void _addIngredient() {
-    if (_ingredientNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa el nombre del ingrediente')),
-      );
+    final name = _ingredientNameController.text.trim();
+    final quantity = _ingredientQuantityController.text.trim();
+
+    if (name.length < 3) {
+      setState(() {
+        _ingredientError = 'El nombre del ingrediente debe tener al menos 3 letras';
+      });
+      return;
+    }
+
+    if (quantity.isEmpty) {
+      setState(() {
+        _ingredientError = 'Ingresa la cantidad utilizando solo números';
+      });
       return;
     }
 
     setState(() {
       _ingredients.add({
-        'name': _ingredientNameController.text.trim(),
-        'measure': _ingredientMeasureController.text.trim(),
+        'name': name,
+        'quantity': quantity,
+        'unit': _selectedUnit,
+        'measure': '$quantity $_selectedUnit',
       });
       _ingredientNameController.clear();
-      _ingredientMeasureController.clear();
+      _ingredientQuantityController.clear();
+      _ingredientError = null;
+      _formError = null;
     });
   }
 
   void _addStep() {
-    if (_stepController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa la descripción del paso')),
-      );
+    final stepText = _stepController.text.trim();
+
+    if (stepText.isEmpty) {
+      setState(() {
+        _formError = 'Ingresa la descripción del paso antes de agregarlo.';
+      });
       return;
     }
 
     setState(() {
-      _steps.add(_stepController.text.trim());
+      _steps.add(stepText);
       _stepController.clear();
+      _formError = null;
     });
   }
 
   void _removeIngredient(int index) {
     setState(() {
       _ingredients.removeAt(index);
+      _ingredientError = null;
     });
   }
 
@@ -120,10 +156,49 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
   }
 
   Future<void> _publishRecipe() async {
-    if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa el nombre de la receta')),
-      );
+    final name = _nameController.text.trim();
+    final servingsText = _servingsController.text.trim();
+
+    setState(() {
+      _formError = null;
+      _servingsError = null;
+    });
+
+    if (name.length < 3) {
+      setState(() {
+        _formError = 'El nombre de la receta debe tener al menos 3 caracteres.';
+      });
+      return;
+    }
+
+    if (servingsText.isEmpty) {
+      setState(() {
+        _servingsError = 'Ingresa la cantidad de porciones';
+        _formError = 'Corrige los campos resaltados antes de continuar.';
+      });
+      return;
+    }
+
+    final servingsValue = int.tryParse(servingsText);
+    if (servingsValue == null || servingsValue <= 0) {
+      setState(() {
+        _servingsError = 'Ingresa un número válido de porciones';
+        _formError = 'Corrige los campos resaltados antes de continuar.';
+      });
+      return;
+    }
+
+    if (_ingredients.isEmpty) {
+      setState(() {
+        _formError = 'Agrega al menos un ingrediente antes de publicar.';
+      });
+      return;
+    }
+
+    if (_steps.isEmpty) {
+      setState(() {
+        _formError = 'Agrega al menos un paso de preparación.';
+      });
       return;
     }
 
@@ -136,20 +211,6 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
           const SnackBar(content: Text('Inicia sesión para publicar recetas')),
         );
       }
-      return;
-    }
-
-    if (_ingredients.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Agrega al menos un ingrediente')),
-      );
-      return;
-    }
-
-    if (_steps.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Agrega al menos un paso de preparación')),
-      );
       return;
     }
 
@@ -169,6 +230,9 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Receta publicada exitosamente')),
         );
+        setState(() {
+          _formError = null;
+        });
         Navigator.pop(context);
       }
     } catch (e) {
@@ -371,9 +435,11 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                         controller: _servingsController,
                         style: const TextStyle(color: Colors.white),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         decoration: InputDecoration(
                           hintText: '4',
                           hintStyle: const TextStyle(color: Colors.white24),
+                          errorText: _servingsError,
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
                           border: OutlineInputBorder(
@@ -460,12 +526,15 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
+                SizedBox(
+                  width: 90,
                   child: TextField(
-                    controller: _ingredientMeasureController,
+                    controller: _ingredientQuantityController,
                     style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      hintText: 'Ej: 400 g',
+                      hintText: 'Cant.',
                       hintStyle: const TextStyle(color: Colors.white24),
                       filled: true,
                       fillColor: const Color(0xFF2A2A2A),
@@ -480,8 +549,43 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2A2A2A),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: DropdownButton<String>(
+                    value: _selectedUnit,
+                    dropdownColor: const Color(0xFF2A2A2A),
+                    underline: const SizedBox(),
+                    iconEnabledColor: Colors.white70,
+                    style: const TextStyle(color: Colors.white),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() {
+                        _selectedUnit = value;
+                      });
+                    },
+                    items: _unitOptions
+                        .map((unit) => DropdownMenuItem<String>(
+                              value: unit,
+                              child: Text(unit),
+                            ))
+                        .toList(),
+                  ),
+                ),
               ],
             ),
+            if (_ingredientError != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _ingredientError!,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+              ),
+            ],
             const SizedBox(height: 12),
             TextButton.icon(
               onPressed: _addIngredient,
@@ -632,6 +736,13 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               }),
             ],
             const SizedBox(height: 32),
+            if (_formError != null) ...[
+              Text(
+                _formError!,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+            ],
             // Botones de acción
             Row(
               children: [
