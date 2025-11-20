@@ -20,15 +20,41 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Incrementamos la versión
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          createdAt TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   Future _createDB(Database db, int version) async {
     const idType = 'TEXT PRIMARY KEY';
     const textType = 'TEXT NOT NULL';
     const textTypeNullable = 'TEXT';
+
+    // Tabla de usuarios
+    await db.execute('''
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name $textType,
+        email $textType UNIQUE,
+        password $textType,
+        createdAt TEXT NOT NULL
+      )
+    ''');
 
     // Tabla de recetas favoritas
     await db.execute('''
@@ -91,6 +117,55 @@ class DatabaseHelper {
         FOREIGN KEY (recipeId) REFERENCES user_recipes (id) ON DELETE CASCADE
       )
     ''');
+  }
+
+  // USUARIOS - LOGIN Y REGISTRO
+  Future<Map<String, dynamic>?> registerUser(String name, String email, String password) async {
+    final db = await instance.database;
+    
+    // Verificar si el email ya existe
+    final existing = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+    
+    if (existing.isNotEmpty) {
+      return null; // Email ya registrado
+    }
+    
+    final id = await db.insert('users', {
+      'name': name,
+      'email': email,
+      'password': password, // En producción, deberías usar hash
+      'createdAt': DateTime.now().toIso8601String(),
+    });
+    
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+    };
+  }
+
+  Future<Map<String, dynamic>?> loginUser(String email, String password) async {
+    final db = await instance.database;
+    
+    final result = await db.query(
+      'users',
+      where: 'email = ? AND password = ?',
+      whereArgs: [email, password],
+    );
+    
+    if (result.isEmpty) {
+      return null; // Credenciales incorrectas
+    }
+    
+    return {
+      'id': result.first['id'],
+      'name': result.first['name'],
+      'email': result.first['email'],
+    };
   }
 
   // FAVORITOS
@@ -248,6 +323,44 @@ class DatabaseHelper {
     }
 
     return recipes;
+  }
+
+  Future<Map<String, dynamic>?> getUserRecipeById(String id) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'user_recipes',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (result.isEmpty) return null;
+
+    final row = result.first;
+    final ingredients = await db.query(
+      'user_recipe_ingredients',
+      where: 'recipeId = ?',
+      whereArgs: [id],
+    );
+
+    final steps = await db.query(
+      'user_recipe_steps',
+      where: 'recipeId = ?',
+      whereArgs: [id],
+      orderBy: 'stepNumber',
+    );
+
+    return {
+      'id': row['id'],
+      'name': row['name'],
+      'description': row['description'],
+      'imageUrl': row['imageUrl'],
+      'time': row['time'],
+      'servings': row['servings'],
+      'difficulty': row['difficulty'],
+      'createdAt': row['createdAt'],
+      'ingredients': ingredients,
+      'steps': steps,
+    };
   }
 
   Future<void> deleteUserRecipe(String id) async {

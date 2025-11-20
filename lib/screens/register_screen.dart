@@ -1,7 +1,97 @@
 import 'package:flutter/material.dart';
+import '../services/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _register() async {
+    if (_nameController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty ||
+        _confirmPasswordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+
+    if (_passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = await _dbHelper.registerUser(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (user != null) {
+        // Guardar sesión
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('userId', user['id'] as int);
+        await prefs.setString('userName', user['name'] as String);
+        await prefs.setString('userEmail', user['email'] as String);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cuenta creada exitosamente')),
+          );
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Este email ya está registrado')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +104,6 @@ class RegisterScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              // Logo de chef
               const Icon(
                 Icons.restaurant_menu,
                 size: 80,
@@ -42,13 +131,13 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 48),
-              // Nombre Completo
               const Text(
                 'Nombre Completo',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Nombre(s)',
@@ -63,13 +152,14 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Email
               const Text(
                 'Email',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'ejemplo@email.com',
@@ -84,13 +174,13 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Contraseña
               const Text(
                 'Contraseña',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -106,13 +196,13 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Confirmar Contraseña
               const Text(
                 'Confirmar Contraseña',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _confirmPasswordController,
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -128,11 +218,8 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              // Botón Crear Cuenta
               ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacementNamed('/home');
-                },
+                onPressed: _isLoading ? null : _register,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
@@ -141,13 +228,21 @@ class RegisterScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Crear Cuenta',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                        ),
+                      )
+                    : const Text(
+                        'Crear Cuenta',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
               ),
               const SizedBox(height: 16),
-              // Términos de uso
               RichText(
                 textAlign: TextAlign.center,
                 text: const TextSpan(
@@ -173,7 +268,6 @@ class RegisterScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              // Link a Iniciar Sesión
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
