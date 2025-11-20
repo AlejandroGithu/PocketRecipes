@@ -1,4 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
 import '../services/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,10 +21,12 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _servingsController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
   
   final List<Map<String, String>> _ingredients = [];
   final List<String> _steps = [];
   String _selectedDifficulty = 'Facil';
+  File? _selectedImage;
   
   final TextEditingController _ingredientNameController = TextEditingController();
   final TextEditingController _ingredientMeasureController = TextEditingController();
@@ -80,6 +88,37 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     });
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) {
+        return;
+      }
+
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName =
+          'recipe_${DateTime.now().millisecondsSinceEpoch}${p.extension(pickedFile.path)}';
+      final savedPath = p.join(appDir.path, fileName);
+
+      final savedImage = await File(pickedFile.path).copy(savedPath);
+
+      if (!mounted) return;
+      setState(() {
+        _selectedImage = savedImage;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo cargar la imagen: $e')),
+      );
+    }
+  }
+
   Future<void> _publishRecipe() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,7 +157,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
       await _dbHelper.addUserRecipe({
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
-        'imageUrl': null,
+        'imageUrl': _selectedImage?.path,
         'time': _timeController.text.trim(),
         'servings': _servingsController.text.trim(),
         'difficulty': _selectedDifficulty,
@@ -179,13 +218,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
           children: [
             // Área de subir foto
             GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Función de subir foto próximamente disponible'),
-                  ),
-                );
-              },
+              onTap: _pickImage,
               child: Container(
                 height: 180,
                 decoration: BoxDecoration(
@@ -193,23 +226,49 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white10, width: 2, style: BorderStyle.solid),
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add_a_photo, color: Colors.white38, size: 48),
-                      SizedBox(height: 8),
-                      Text(
-                        'Toca para subir foto',
-                        style: TextStyle(color: Colors.white38, fontSize: 14),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (_selectedImage != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.file(
+                          _selectedImage!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    else
+                      const Center(
+                        child: Icon(Icons.add_a_photo, color: Colors.white38, size: 48),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'JPG, PNG hasta 5MB',
-                        style: TextStyle(color: Colors.white24, fontSize: 12),
+                    if (_selectedImage == null)
+                      const Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            'Toca para subir foto (JPG o PNG)',
+                            style: TextStyle(color: Colors.white38, fontSize: 14),
+                          ),
+                        ),
+                      )
+                    else
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          margin: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'Toca para cambiar foto',
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             ),

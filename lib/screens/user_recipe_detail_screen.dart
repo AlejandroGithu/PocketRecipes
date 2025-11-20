@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+
 import '../services/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -108,25 +111,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: recipe!['imageUrl'] != null
-                  ? Image.network(
-                      recipe!['imageUrl'],
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: const Color(0xFF2A2A2A),
-                          child: const Center(
-                            child: Icon(Icons.restaurant, size: 80, color: Colors.white38),
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: const Color(0xFF2A2A2A),
-                      child: const Center(
-                        child: Icon(Icons.restaurant, size: 80, color: Colors.white38),
-                      ),
-                    ),
+              background: _buildRecipeHeaderImage(recipe!['imageUrl'] as String?),
             ),
           ),
           SliverToBoxAdapter(
@@ -390,6 +375,47 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRecipeHeaderImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        color: const Color(0xFF2A2A2A),
+        child: const Center(
+          child: Icon(Icons.restaurant, size: 80, color: Colors.white38),
+        ),
+      );
+    }
+
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: const Color(0xFF2A2A2A),
+            child: const Center(
+              child: Icon(Icons.restaurant, size: 80, color: Colors.white38),
+            ),
+          );
+        },
+      );
+    }
+
+    final file = File(imagePath);
+    if (!file.existsSync()) {
+      return Container(
+        color: const Color(0xFF2A2A2A),
+        child: const Center(
+          child: Icon(Icons.restaurant, size: 80, color: Colors.white38),
+        ),
+      );
+    }
+
+    return Image.file(
+      file,
+      fit: BoxFit.cover,
     );
   }
 }

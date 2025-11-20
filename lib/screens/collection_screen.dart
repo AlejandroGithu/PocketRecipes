@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/database_helper.dart';
+
 import '../models/meal.dart';
+import '../services/database_helper.dart';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -399,6 +402,8 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   }
 
   Widget _buildUserRecipeCard(Map<String, dynamic> recipe) {
+    final decorationImage = _buildUserRecipeImage(recipe['imageUrl'] as String?);
+
     return GestureDetector(
       onTap: () {
         // Navegar a la pantalla de detalle de receta de usuario
@@ -419,14 +424,9 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 color: const Color(0xFF2A2A2A),
-                image: recipe['imageUrl'] != null
-                    ? DecorationImage(
-                        image: NetworkImage(recipe['imageUrl']),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+                image: decorationImage,
               ),
-              child: recipe['imageUrl'] == null
+              child: decorationImage == null
                   ? const Center(
                       child: Icon(Icons.restaurant, size: 48, color: Colors.white38),
                     )
@@ -470,7 +470,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
               right: 12,
               child: GestureDetector(
                 onTap: () {
-                  _showDeleteDialog(recipe['id']);
+                  _showDeleteDialog(recipe);
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -637,7 +637,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
     );
   }
 
-  void _showDeleteDialog(String recipeId) {
+  void _showDeleteDialog(Map<String, dynamic> recipe) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -658,13 +658,27 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
           ElevatedButton(
             onPressed: () async {
               if (_userId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(this.context).showSnackBar(
                   const SnackBar(content: Text('Inicia sesión para eliminar recetas')),
                 );
                 return;
               }
+              final recipeId = recipe['id'] as String;
+              final imagePath = recipe['imageUrl'] as String?;
+
               await _dbHelper.deleteUserRecipe(recipeId, _userId!);
               Navigator.pop(context);
+
+              if (imagePath != null && imagePath.isNotEmpty) {
+                final imageFile = File(imagePath);
+                if (await imageFile.exists()) {
+                  try {
+                    await imageFile.delete();
+                  } catch (_) {}
+                }
+              }
               _loadData();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -681,5 +695,17 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         ],
       ),
     );
+  }
+
+  DecorationImage? _buildUserRecipeImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) return null;
+    if (imagePath.startsWith('http')) {
+      return DecorationImage(image: NetworkImage(imagePath), fit: BoxFit.cover);
+    }
+
+    final file = File(imagePath);
+    if (!file.existsSync()) return null;
+
+    return DecorationImage(image: FileImage(file), fit: BoxFit.cover);
   }
 }
