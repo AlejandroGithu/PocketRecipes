@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/meal_api_service.dart';
 import '../models/meal.dart';
+import '../services/database_helper.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   const RecipeDetailScreen({super.key});
@@ -12,8 +13,10 @@ class RecipeDetailScreen extends StatefulWidget {
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final MealApiService _apiService = MealApiService();
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
   Meal? meal;
   bool isLoading = true;
+  bool isFavorite = false;
 
   @override
   void initState() {
@@ -37,10 +40,43 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
     }
 
     final loadedMeal = await _apiService.getMealById(mealId);
+    final favoriteStatus = await _dbHelper.isFavorite(mealId);
+    
     setState(() {
       meal = loadedMeal;
+      isFavorite = favoriteStatus;
       isLoading = false;
     });
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (meal == null) return;
+
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+
+    if (isFavorite) {
+      await _dbHelper.addFavorite(meal!);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Agregado a favoritos'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      await _dbHelper.removeFavorite(meal!.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Eliminado de favoritos'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -83,7 +119,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
       backgroundColor: const Color(0xFF1A1A1A),
       body: CustomScrollView(
         slivers: [
-          // AppBar con imagen que hace scroll
           SliverAppBar(
             expandedHeight: 250,
             pinned: false,
@@ -94,7 +129,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.arrow_back, color: Colors.white),
@@ -106,12 +141,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.favorite_border, color: Colors.white),
-                    onPressed: () {},
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                    ),
+                    onPressed: _toggleFavorite,
                   ),
                 ),
               ),
@@ -123,14 +161,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
               ),
             ),
           ),
-          // Contenido principal
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título
                   Text(
                     meal!.name,
                     style: const TextStyle(
@@ -140,7 +176,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Área y categoría
                   Row(
                     children: [
                       if (meal!.area != null) ...[
@@ -163,7 +198,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Botones de info
                   Row(
                     children: [
                       Expanded(
@@ -182,7 +216,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                     ],
                   ),
                   const SizedBox(height: 24),
-                  // Instrucciones o Descripción
                   if (meal!.instructions != null && meal!.instructions!.isNotEmpty) ...[
                     const Text(
                       'Descripción',
@@ -205,7 +238,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                     ),
                     const SizedBox(height: 24),
                   ],
-                  // TabBar
                   Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A2A2A),
@@ -228,7 +260,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // TabBarView con contenido
                   SizedBox(
                     height: 400,
                     child: TabBarView(
@@ -386,7 +417,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
   }
 
   Widget _buildNutricionTab() {
-    // La API de TheMealDB no provee información nutricional
     return const Center(
       child: Padding(
         padding: EdgeInsets.all(32.0),

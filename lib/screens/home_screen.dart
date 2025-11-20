@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'recipes_list_screen.dart';
 import 'collection_screen.dart';
-import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +15,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = const [
     RecipesListScreen(),
     CollectionScreen(),
-    ProfileScreen(),
   ];
 
   @override
@@ -33,7 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Colección'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
         onTap: (i) => setState(() => _currentIndex = i),
       ),
