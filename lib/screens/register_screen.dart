@@ -26,27 +26,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
   Future<void> _register() async {
-    if (_nameController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty ||
-        _confirmPasswordController.text.trim().isEmpty) {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(content: Text('Please fill in all fields')),
+        const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    if (_passwordController.text != _confirmPasswordController.text) {
+    if (!_isValidEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(content: Text('Passwords do not match')),
+        const SnackBar(content: Text('Please enter a valid email address')),
       );
       return;
     }
 
-    if (_passwordController.text.length < 6) {
+    if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(content: Text('Password must be at least 6 characters long')),
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters long')),
       );
       return;
     }
@@ -54,14 +70,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final user = await _dbHelper.registerUser(
-        _nameController.text.trim(),
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
+      final user = await _dbHelper.registerUser(name, email, password);
 
       if (user != null) {
-  // Save session
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('userId', user['id'] as int);
         await prefs.setString('userName', user['name'] as String);
@@ -104,37 +115,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              const Icon(
-                Icons.restaurant_menu,
-                size: 80,
-                color: Colors.white,
-              ),
+              const Icon(Icons.restaurant_menu, size: 80, color: Colors.white),
               const SizedBox(height: 16),
-              const Text(
-                'POCKET',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-              const Text(
-                'RECIPES',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w300,
-                  letterSpacing: 4,
-                ),
-              ),
+              const Text('POCKET', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 2)),
+              const Text('RECIPES', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w300, letterSpacing: 4)),
               const SizedBox(height: 48),
-              const Text(
-                'Full Name',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              const Text('Full Name', style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 8),
               TextField(
                 controller: _nameController,
@@ -145,17 +131,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.person_outline, color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Email',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              const Text('Email', style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
@@ -167,17 +147,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Password',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              const Text('Password', style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
@@ -189,17 +163,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Confirm Password',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              const Text('Confirm Password', style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 8),
               TextField(
                 controller: _confirmPasswordController,
@@ -211,10 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
               const SizedBox(height: 24),
@@ -224,23 +189,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
-                      )
-                    : const Text(
-                        'Create Account',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.black)))
+                    : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 16),
               RichText(
@@ -249,21 +202,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(color: Colors.white38, fontSize: 12),
                   children: [
                     TextSpan(text: 'By signing up you agree to our '),
-                    TextSpan(
-                      text: 'Terms of Use',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
+                    TextSpan(text: 'Terms of Use', style: TextStyle(color: Colors.white70, decoration: TextDecoration.underline)),
                     TextSpan(text: ' and '),
-                    TextSpan(
-                      text: 'Privacy Policy',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
+                    TextSpan(text: 'Privacy Policy', style: TextStyle(color: Colors.white70, decoration: TextDecoration.underline)),
                   ],
                 ),
               ),
@@ -271,22 +212,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Already have an account? ',
-                    style: TextStyle(color: Colors.white38),
-                  ),
+                  const Text('Already have an account? ', style: TextStyle(color: Colors.white38)),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushReplacementNamed('/login');
-                    },
-                    child: const Text(
-                      'Log In',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
+                    onTap: () => Navigator.of(context).pushReplacementNamed('/login'),
+                    child: const Text('Log In', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, decoration: TextDecoration.underline)),
                   ),
                 ],
               ),

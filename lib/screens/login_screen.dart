@@ -22,10 +22,27 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
   Future<void> _login() async {
-    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(content: Text('Please fill in all fields')),
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
       );
       return;
     }
@@ -33,13 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final user = await _dbHelper.loginUser(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
+      final user = await _dbHelper.loginUser(email, password);
 
       if (user != null) {
-  // Save session
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('userId', user['id'] as int);
         await prefs.setString('userName', user['name'] as String);
@@ -79,36 +92,21 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 60),
-              const Icon(
-                Icons.restaurant_menu,
-                size: 80,
-                color: Colors.white,
-              ),
+              const Icon(Icons.restaurant_menu, size: 80, color: Colors.white),
               const SizedBox(height: 16),
               const Text(
                 'POCKET RECIPES',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 2),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Your kitchen, always with you',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white38,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white38, fontSize: 14),
               ),
               const SizedBox(height: 60),
-              const Text(
-                'Email',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              const Text('Email', style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
@@ -120,17 +118,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Password',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
+              const Text('Password', style: TextStyle(color: Colors.white70, fontSize: 14)),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
@@ -142,10 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.white38),
                   filled: true,
                   fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
               ),
               const SizedBox(height: 24),
@@ -155,61 +144,33 @@ class _LoginScreenState extends State<LoginScreen> {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.black)),
                       )
-                    : const Text(
-                        'Log In',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                    : const Text('Log In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Feature coming soon')),
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Feature coming soon')));
                   },
-                  child: const Text(
-                    'Forgot your password?',
-                    style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 14,
-                    ),
-                  ),
+                  child: const Text('Forgot your password?', style: TextStyle(color: Colors.white38, fontSize: 14)),
                 ),
               ),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Don't have an account? ",
-                    style: TextStyle(color: Colors.white38),
-                  ),
+                  const Text("Don't have an account? ", style: TextStyle(color: Colors.white38)),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushNamed('/register');
-                    },
-                    child: const Text(
-                      'Sign up',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
+                    onTap: () => Navigator.of(context).pushNamed('/register'),
+                    child: const Text('Sign up', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, decoration: TextDecoration.underline)),
                   ),
                 ],
               ),

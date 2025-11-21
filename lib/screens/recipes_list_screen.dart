@@ -33,9 +33,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
   Future<void> _initialize() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    setState(() {
-      _userId = prefs.getInt('userId');
-    });
+    setState(() => _userId = prefs.getInt('userId'));
     await _loadRandomMeals();
   }
 
@@ -48,48 +46,29 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
   Future<void> _loadFavoritesStatus() async {
     if (_userId == null) {
       if (!mounted) return;
-      setState(() {
-        favoritesStatus = {for (var meal in meals) meal.id: false};
-      });
+      setState(() => favoritesStatus = {for (var meal in meals) meal.id: false});
       return;
     }
-
     Map<String, bool> status = {};
     for (var meal in meals) {
       status[meal.id] = await _dbHelper.isFavorite(meal.id, _userId!);
     }
     if (!mounted) return;
-    setState(() {
-      favoritesStatus = status;
-    });
+    setState(() => favoritesStatus = status);
   }
 
   Future<void> _loadRandomMeals() async {
-    setState(() {
-      isLoading = true;
-      selectedCategory = null;
-      selectedIngredient = null;
-      isSearching = false;
-    });
+    setState(() { isLoading = true; selectedCategory = null; selectedIngredient = null; isSearching = false; });
     final randomMeals = await _apiService.getRandomMeals(6);
     if (!mounted) return;
-    setState(() {
-      meals = randomMeals;
-      isLoading = false;
-    });
+    setState(() { meals = randomMeals; isLoading = false; });
     _loadFavoritesStatus();
   }
 
   Future<void> _filterByCategory(String category) async {
-    setState(() {
-      selectedCategory = category;
-      selectedIngredient = null;
-      isSearching = false;
-      isLoading = true;
-    });
-    
+    setState(() { selectedCategory = category; selectedIngredient = null; isSearching = false; isLoading = true; });
     List<Meal> filtered;
-  if (category == 'All') {
+    if (category == 'All') {
       filtered = await _apiService.getRandomMeals(6);
     } else {
       final simpleMeals = await _apiService.filterByCategory(category);
@@ -99,58 +78,30 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
         if (fullMeal != null) filtered.add(fullMeal);
       }
     }
-    
     if (!mounted) return;
-    setState(() {
-      meals = filtered;
-      isLoading = false;
-    });
+    setState(() { meals = filtered; isLoading = false; });
     _loadFavoritesStatus();
   }
 
   Future<void> _filterByIngredient(String ingredient) async {
-    setState(() {
-      selectedIngredient = ingredient;
-      selectedCategory = null;
-      isSearching = false;
-      isLoading = true;
-    });
-    
+    setState(() { selectedIngredient = ingredient; selectedCategory = null; isSearching = false; isLoading = true; });
     final simpleMeals = await _apiService.filterByIngredient(ingredient);
     List<Meal> filtered = [];
-    
     for (var simpleMeal in simpleMeals.take(6)) {
       final fullMeal = await _apiService.getMealById(simpleMeal.id);
       if (fullMeal != null) filtered.add(fullMeal);
     }
-    
     if (!mounted) return;
-    setState(() {
-      meals = filtered;
-      isLoading = false;
-    });
+    setState(() { meals = filtered; isLoading = false; });
     _loadFavoritesStatus();
   }
 
   Future<void> _searchMeals(String query) async {
-    if (query.trim().isEmpty) {
-      _loadRandomMeals();
-      return;
-    }
-    
-    setState(() {
-      isSearching = true;
-      selectedCategory = null;
-      selectedIngredient = null;
-      isLoading = true;
-    });
-    
+    if (query.trim().isEmpty) { _loadRandomMeals(); return; }
+    setState(() { isSearching = true; selectedCategory = null; selectedIngredient = null; isLoading = true; });
     final results = await _apiService.searchMealByName(query);
     if (!mounted) return;
-    setState(() {
-      meals = results;
-      isLoading = false;
-    });
+    setState(() { meals = results; isLoading = false; });
     _loadFavoritesStatus();
   }
 
@@ -159,15 +110,8 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       context,
       MaterialPageRoute(builder: (context) => const IngredientsScreen()),
     );
-
     if (selectedIngredients != null && selectedIngredients.isNotEmpty) {
-      setState(() {
-        isSearching = false;
-        selectedCategory = null;
-        selectedIngredient = null;
-        isLoading = true;
-      });
-
+      setState(() { isSearching = false; selectedCategory = null; selectedIngredient = null; isLoading = true; });
       List<Meal> allResults = [];
       for (var ingredient in selectedIngredients) {
         final simpleMeals = await _apiService.filterByIngredient(ingredient);
@@ -178,47 +122,26 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
           }
         }
       }
-
-      setState(() {
-        meals = allResults;
-        isLoading = false;
-      });
+      setState(() { meals = allResults; isLoading = false; });
       _loadFavoritesStatus();
     }
   }
 
   Future<void> _toggleFavorite(Meal meal) async {
     if (_userId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Log in to manage favorites'), duration: Duration(seconds: 1)),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Log in to manage favorites'), duration: Duration(seconds: 1)));
       return;
     }
-
     final isFav = favoritesStatus[meal.id] ?? false;
-    
     if (isFav) {
       await _dbHelper.removeFavorite(meal.id, _userId!);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Removed from favorites'), duration: Duration(seconds: 1)),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from favorites'), duration: Duration(seconds: 1)));
     } else {
       await _dbHelper.addFavorite(meal, _userId!);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Added to favorites'), duration: Duration(seconds: 1)),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to favorites'), duration: Duration(seconds: 1)));
     }
-    
     if (!mounted) return;
-    setState(() {
-      favoritesStatus[meal.id] = !isFav;
-    });
+    setState(() => favoritesStatus[meal.id] = !isFav);
   }
 
   @override
@@ -233,34 +156,12 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Hello, Chef!',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'What will you cook today?',
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_outlined, color: Colors.white70),
-                      onPressed: () {},
-                    ),
+                    Text('Hello, Chef!', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 4),
+                    Text('What will you cook today?', style: TextStyle(color: Colors.white60, fontSize: 14)),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -273,20 +174,11 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                     hintStyle: const TextStyle(color: Colors.white38),
                     prefixIcon: const Icon(Icons.search, color: Colors.white38),
                     suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.white38),
-                            onPressed: () {
-                              _searchController.clear();
-                              _loadRandomMeals();
-                            },
-                          )
+                        ? IconButton(icon: const Icon(Icons.clear, color: Colors.white38), onPressed: () { _searchController.clear(); _loadRandomMeals(); })
                         : null,
                     filled: true,
                     fillColor: const Color(0xFF2A2A2A),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -296,12 +188,9 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _buildCategoryChip('All'),
-                        const SizedBox(width: 8),
-                        _buildCategoryChip('Seafood'),
-                        const SizedBox(width: 8),
-                        _buildCategoryChip('Dessert'),
-                        const SizedBox(width: 8),
+                        _buildCategoryChip('All'), const SizedBox(width: 8),
+                        _buildCategoryChip('Seafood'), const SizedBox(width: 8),
+                        _buildCategoryChip('Dessert'), const SizedBox(width: 8),
                         _buildCategoryChip('Vegetarian'),
                       ],
                     ),
@@ -310,24 +199,10 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Available Ingredients',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      const Text('Available Ingredients', style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500)),
                       GestureDetector(
                         onTap: _navigateToIngredients,
-                        child: const Text(
-                          'See All',
-                          style: TextStyle(
-                            color: Colors.white38,
-                            fontSize: 14,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
+                        child: const Text('See All', style: TextStyle(color: Colors.white38, fontSize: 14, decoration: TextDecoration.underline)),
                       ),
                     ],
                   ),
@@ -337,12 +212,9 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _buildIngredientCard('chicken', '🍗'),
-                        const SizedBox(width: 12),
-                        _buildIngredientCard('beef', '🥩'),
-                        const SizedBox(width: 12),
-                        _buildIngredientCard('salmon', '🐟'),
-                        const SizedBox(width: 12),
+                        _buildIngredientCard('chicken', '🍗'), const SizedBox(width: 12),
+                        _buildIngredientCard('beef', '🥩'), const SizedBox(width: 12),
+                        _buildIngredientCard('salmon', '🐟'), const SizedBox(width: 12),
                         _buildIngredientCard('pork', '🥓'),
                       ],
                     ),
@@ -350,42 +222,16 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                   const SizedBox(height: 24),
                 ],
                 Text(
-          isSearching 
-            ? 'Search results'
-                      : selectedCategory != null
-              ? 'Recipes for $selectedCategory'
-                          : selectedIngredient != null
-                ? 'Recipes with $selectedIngredient'
-                : 'Recommended Recipes',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  isSearching ? 'Search results' : selectedCategory != null ? 'Recipes for $selectedCategory' : selectedIngredient != null ? 'Recipes with $selectedIngredient' : 'Recommended Recipes',
+                  style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 16),
                 if (isLoading)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: CircularProgressIndicator(color: Colors.white),
-                    ),
-                  )
+                  const Center(child: Padding(padding: EdgeInsets.all(32.0), child: CircularProgressIndicator(color: Colors.white)))
                 else if (meals.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Text(
-                        'No recipes found',
-                        style: TextStyle(color: Colors.white38, fontSize: 16),
-                      ),
-                    ),
-                  )
+                  const Center(child: Padding(padding: EdgeInsets.all(32.0), child: Text('No recipes found', style: TextStyle(color: Colors.white38, fontSize: 16))))
                 else
-                  ...meals.map((meal) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildRecipeCard(meal),
-                      )),
+                  ...meals.map((meal) => Padding(padding: const EdgeInsets.only(bottom: 16), child: _buildRecipeCard(meal))),
                 const SizedBox(height: 20),
               ],
             ),
@@ -401,17 +247,8 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       onTap: () => _filterByCategory(label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.black : Colors.white70,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
+        decoration: BoxDecoration(color: isSelected ? Colors.white : const Color(0xFF2A2A2A), borderRadius: BorderRadius.circular(20)),
+        child: Text(label, style: TextStyle(color: isSelected ? Colors.black : Colors.white70, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
       ),
     );
   }
@@ -432,14 +269,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
           children: [
             Text(emoji, style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 8),
-            Text(
-              ingredient,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
+            Text(ingredient, style: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontSize: 11, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
           ],
         ),
       ),
@@ -448,99 +278,50 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
 
   Widget _buildRecipeCard(Meal meal) {
     final isFav = favoritesStatus[meal.id] ?? false;
-    
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context)
-            .pushNamed('/recipe', arguments: {'mealId': meal.id})
-            .then((_) => _loadFavoritesStatus());
-      },
+      onTap: () => Navigator.of(context).pushNamed('/recipe', arguments: {'mealId': meal.id}).then((_) => _loadFavoritesStatus()),
       child: Container(
         height: 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          image: DecorationImage(
-            image: NetworkImage(meal.imageUrl),
-            fit: BoxFit.cover,
-          ),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), image: DecorationImage(image: NetworkImage(meal.imageUrl), fit: BoxFit.cover)),
         child: Stack(
           children: [
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                  ),
+                  gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withOpacity(0.8)]),
                 ),
               ),
             ),
             Positioned(
-              top: 12,
-              right: 12,
+              top: 12, right: 12,
               child: GestureDetector(
                 onTap: () => _toggleFavorite(meal),
                 child: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isFav ? Icons.favorite : Icons.favorite_border,
-                    color: isFav ? Colors.red : Colors.white,
-                    size: 20,
-                  ),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
+                  child: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.white, size: 20),
                 ),
               ),
             ),
             Positioned(
-              bottom: 12,
-              left: 12,
-              right: 12,
+              bottom: 12, left: 12, right: 12,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    meal.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(meal.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(
-                    meal.category ?? 'No category',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
+                  Text(meal.category ?? 'No category', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       const Icon(Icons.public, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
-                      Text(
-                        meal.area ?? 'International',
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
+                      Text(meal.area ?? 'International', style: const TextStyle(color: Colors.white70, fontSize: 11)),
                       const SizedBox(width: 12),
                       const Icon(Icons.category, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
-                      Text(
-                        meal.category ?? 'Various',
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
+                      Text(meal.category ?? 'Various', style: const TextStyle(color: Colors.white70, fontSize: 11)),
                     ],
                   ),
                 ],
