@@ -22,7 +22,7 @@ class Meal {
   });
 
   factory Meal.fromJson(Map<String, dynamic> json) {
-    // Extraer ingredientes y medidas
+  // Extract ingredients and measures
     Map<String, String> ingredients = {};
     for (int i = 1; i <= 20; i++) {
       final ingredient = json['strIngredient$i'];
@@ -35,7 +35,7 @@ class Meal {
 
     return Meal(
       id: json['idMeal'] ?? '',
-      name: json['strMeal'] ?? 'Sin nombre',
+  name: json['strMeal'] ?? 'No name',
       category: json['strCategory'],
       area: json['strArea'],
       instructions: json['strInstructions'],
@@ -46,11 +46,11 @@ class Meal {
     );
   }
 
-  // Para la vista simplificada (búsqueda/filtros)
+  // For the simplified view (search/filters)
   factory Meal.fromJsonSimple(Map<String, dynamic> json) {
     return Meal(
       id: json['idMeal'] ?? '',
-      name: json['strMeal'] ?? 'Sin nombre',
+  name: json['strMeal'] ?? 'No name',
       imageUrl: json['strMealThumb'] ?? '',
       ingredients: {},
     );
@@ -59,7 +59,7 @@ class Meal {
   List<String> getInstructionSteps() {
     if (instructions == null || instructions!.isEmpty) return [];
     
-    // Dividir las instrucciones en pasos (por saltos de línea o puntos)
+  // Split the instructions into steps (by line breaks or periods)
     return instructions!
         .split(RegExp(r'\r?\n|\.\s+'))
         .where((step) => step.trim().isNotEmpty)

@@ -29,8 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Colección'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Collection'),
         ],
         onTap: (i) => setState(() => _currentIndex = i),
       ),

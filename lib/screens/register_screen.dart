@@ -32,21 +32,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passwordController.text.trim().isEmpty ||
         _confirmPasswordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor completa todos los campos')),
+  const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Las contraseñas no coinciden')),
+  const SnackBar(content: Text('Passwords do not match')),
       );
       return;
     }
 
     if (_passwordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
+  const SnackBar(content: Text('Password must be at least 6 characters long')),
       );
       return;
     }
@@ -61,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (user != null) {
-        // Guardar sesión
+  // Save session
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('userId', user['id'] as int);
         await prefs.setString('userName', user['name'] as String);
@@ -69,14 +69,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cuenta creada exitosamente')),
+            const SnackBar(content: Text('Account created successfully')),
           );
           Navigator.of(context).pushReplacementNamed('/home');
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Este email ya está registrado')),
+            const SnackBar(content: Text('This email is already registered')),
           );
         }
       }
@@ -132,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 48),
               const Text(
-                'Nombre Completo',
+                'Full Name',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
@@ -140,7 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Nombre(s)',
+                  hintText: 'Full name',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.person_outline, color: Colors.white38),
                   filled: true,
@@ -162,7 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'ejemplo@email.com',
+                  hintText: 'example@email.com',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
                   filled: true,
@@ -175,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Contraseña',
+                'Password',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
@@ -184,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Contraseña',
+                  hintText: 'Password',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.white38),
                   filled: true,
@@ -197,7 +197,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Confirmar Contraseña',
+                'Confirm Password',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
@@ -206,7 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Contraseña',
+                  hintText: 'Confirm password',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.white38),
                   filled: true,
@@ -238,7 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       )
                     : const Text(
-                        'Crear Cuenta',
+                        'Create Account',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
               ),
@@ -248,17 +248,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 text: const TextSpan(
                   style: TextStyle(color: Colors.white38, fontSize: 12),
                   children: [
-                    TextSpan(text: 'Al registrarte aceptas nuestros '),
+                    TextSpan(text: 'By signing up you agree to our '),
                     TextSpan(
-                      text: 'Términos de Uso',
+                      text: 'Terms of Use',
                       style: TextStyle(
                         color: Colors.white70,
                         decoration: TextDecoration.underline,
                       ),
                     ),
-                    TextSpan(text: ' y '),
+                    TextSpan(text: ' and '),
                     TextSpan(
-                      text: 'Política de privacidad',
+                      text: 'Privacy Policy',
                       style: TextStyle(
                         color: Colors.white70,
                         decoration: TextDecoration.underline,
@@ -272,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    '¿Ya tienes cuenta? ',
+                    'Already have an account? ',
                     style: TextStyle(color: Colors.white38),
                   ),
                   GestureDetector(
@@ -280,7 +280,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Navigator.of(context).pushReplacementNamed('/login');
                     },
                     child: const Text(
-                      'Inicia Sesión',
+                      'Log In',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,

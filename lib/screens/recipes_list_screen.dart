@@ -89,7 +89,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
     });
     
     List<Meal> filtered;
-    if (category == 'Todos') {
+  if (category == 'All') {
       filtered = await _apiService.getRandomMeals(6);
     } else {
       final simpleMeals = await _apiService.filterByCategory(category);
@@ -191,7 +191,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
     if (_userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inicia sesión para gestionar favoritos'), duration: Duration(seconds: 1)),
+          const SnackBar(content: Text('Log in to manage favorites'), duration: Duration(seconds: 1)),
         );
       }
       return;
@@ -203,14 +203,14 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
       await _dbHelper.removeFavorite(meal.id, _userId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Eliminado de favoritos'), duration: Duration(seconds: 1)),
+          const SnackBar(content: Text('Removed from favorites'), duration: Duration(seconds: 1)),
         );
       }
     } else {
       await _dbHelper.addFavorite(meal, _userId!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Agregado a favoritos'), duration: Duration(seconds: 1)),
+          const SnackBar(content: Text('Added to favorites'), duration: Duration(seconds: 1)),
         );
       }
     }
@@ -240,7 +240,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
-                          'Hola, Chef!',
+                          'Hello, Chef!',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -249,7 +249,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '¿Qué cocinarás hoy?',
+                          'What will you cook today?',
                           style: TextStyle(
                             color: Colors.white60,
                             fontSize: 14,
@@ -269,7 +269,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                   style: const TextStyle(color: Colors.white),
                   onSubmitted: _searchMeals,
                   decoration: InputDecoration(
-                    hintText: 'Buscar recetas, ingredientes ...',
+                    hintText: 'Search recipes, ingredients ...',
                     hintStyle: const TextStyle(color: Colors.white38),
                     prefixIcon: const Icon(Icons.search, color: Colors.white38),
                     suffixIcon: _searchController.text.isNotEmpty
@@ -296,7 +296,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _buildCategoryChip('Todos'),
+                        _buildCategoryChip('All'),
                         const SizedBox(width: 8),
                         _buildCategoryChip('Seafood'),
                         const SizedBox(width: 8),
@@ -311,7 +311,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Ingredientes Disponibles',
+                        'Available Ingredients',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
@@ -321,7 +321,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                       GestureDetector(
                         onTap: _navigateToIngredients,
                         child: const Text(
-                          'Ver Todos',
+                          'See All',
                           style: TextStyle(
                             color: Colors.white38,
                             fontSize: 14,
@@ -350,13 +350,13 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                   const SizedBox(height: 24),
                 ],
                 Text(
-                  isSearching 
-                      ? 'Resultados de búsqueda'
+          isSearching 
+            ? 'Search results'
                       : selectedCategory != null
-                          ? 'Recetas de $selectedCategory'
+              ? 'Recipes for $selectedCategory'
                           : selectedIngredient != null
-                              ? 'Recetas con $selectedIngredient'
-                              : 'Recetas Recomendadas',
+                ? 'Recipes with $selectedIngredient'
+                : 'Recommended Recipes',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
@@ -376,7 +376,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Text(
-                        'No se encontraron recetas',
+                        'No recipes found',
                         style: TextStyle(color: Colors.white38, fontSize: 16),
                       ),
                     ),
@@ -517,7 +517,7 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    meal.category ?? 'Sin categoría',
+                    meal.category ?? 'No category',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -531,14 +531,14 @@ class _RecipesListScreenState extends State<RecipesListScreen> {
                       const Icon(Icons.public, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
                       Text(
-                        meal.area ?? 'Internacional',
+                        meal.area ?? 'International',
                         style: const TextStyle(color: Colors.white70, fontSize: 11),
                       ),
                       const SizedBox(width: 12),
                       const Icon(Icons.category, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
                       Text(
-                        meal.category ?? 'Variado',
+                        meal.category ?? 'Various',
                         style: const TextStyle(color: Colors.white70, fontSize: 11),
                       ),
                     ],

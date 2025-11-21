@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor completa todos los campos')),
+  const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (user != null) {
-        // Guardar sesión
+  // Save session
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('userId', user['id'] as int);
         await prefs.setString('userName', user['name'] as String);
@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email o contraseña incorrectos')),
+            const SnackBar(content: Text('Incorrect email or password')),
           );
         }
       }
@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Tu cocina, siempre contigo',
+                'Your kitchen, always with you',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white38,
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'ejemplo@email.com',
+                  hintText: 'example@email.com',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
                   filled: true,
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Contraseña',
+                'Password',
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               const SizedBox(height: 8),
@@ -137,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Contraseña',
+                  hintText: 'Password',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.white38),
                   filled: true,
@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       )
                     : const Text(
-                        'Iniciar Sesión',
+                        'Log In',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
               ),
@@ -178,11 +178,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Funcionalidad próximamente')),
+                      const SnackBar(content: Text('Feature coming soon')),
                     );
                   },
                   child: const Text(
-                    '¿Olvidaste tu contraseña?',
+                    'Forgot your password?',
                     style: TextStyle(
                       color: Colors.white38,
                       fontSize: 14,
@@ -195,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    '¿No tienes cuenta? ',
+                    "Don't have an account? ",
                     style: TextStyle(color: Colors.white38),
                   ),
                   GestureDetector(
@@ -203,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.of(context).pushNamed('/register');
                     },
                     child: const Text(
-                      'Regístrate',
+                      'Sign up',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,

@@ -61,7 +61,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Máximo 3 ingredientes permitidos'),
+              content: Text('Maximum of 3 ingredients allowed'),
               duration: Duration(seconds: 2),
             ),
           );
@@ -74,7 +74,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
     if (selectedIngredients.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecciona al menos un ingrediente'),
+          content: Text('Select at least one ingredient'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -98,7 +98,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Ingredientes Disponibles',
+              'Available Ingredients',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -106,7 +106,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
               ),
             ),
             Text(
-              'Selecciona hasta 3 ingredientes',
+              'Select up to 3 ingredients',
               style: TextStyle(
                 color: Colors.white38,
                 fontSize: 12,
@@ -125,7 +125,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
               style: const TextStyle(color: Colors.white),
               onChanged: _filterIngredients,
               decoration: InputDecoration(
-                hintText: 'Buscar ingrediente...',
+                hintText: 'Search ingredient...',
                 hintStyle: const TextStyle(color: Colors.white38),
                 prefixIcon: const Icon(Icons.search, color: Colors.white38),
                 suffixIcon: _searchController.text.isNotEmpty
@@ -163,7 +163,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Seleccionados',
+                        'Selected',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -303,7 +303,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
               backgroundColor: Colors.white,
               icon: const Icon(Icons.search, color: Colors.black),
               label: const Text(
-                'Buscar Recetas',
+                'Search Recipes',
                 style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
               ),
             )

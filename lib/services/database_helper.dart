@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3, // Incrementamos la versión para soportar datos por usuario
+  version: 3, // Increase version to support user-specific data
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -46,9 +46,9 @@ class DatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
-  const textType = 'TEXT NOT NULL';
+    const textType = 'TEXT NOT NULL';
 
-    // Tabla de usuarios
+  // User table
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -141,11 +141,11 @@ class DatabaseHelper {
     await db.execute('DROP TABLE IF EXISTS user_recipes');
   }
 
-  // USUARIOS - LOGIN Y REGISTRO
+  // USERS - LOGIN AND REGISTER
   Future<Map<String, dynamic>?> registerUser(String name, String email, String password) async {
     final db = await instance.database;
     
-    // Verificar si el email ya existe
+  // Check if the email already exists
     final existing = await db.query(
       'users',
       where: 'email = ?',
@@ -153,13 +153,13 @@ class DatabaseHelper {
     );
     
     if (existing.isNotEmpty) {
-      return null; // Email ya registrado
+      return null; // Email already registered
     }
     
     final id = await db.insert('users', {
       'name': name,
       'email': email,
-      'password': password, // En producción, deberías usar hash
+  'password': password, // In production you should hash the password
       'createdAt': DateTime.now().toIso8601String(),
     });
     
@@ -180,7 +180,7 @@ class DatabaseHelper {
     );
     
     if (result.isEmpty) {
-      return null; // Credenciales incorrectas
+      return null; // Invalid credentials
     }
     
     return {
@@ -190,7 +190,7 @@ class DatabaseHelper {
     };
   }
 
-  // FAVORITOS
+  // FAVORITES
   Future<void> addFavorite(Meal meal, int userId) async {
     final db = await instance.database;
     
@@ -217,7 +217,7 @@ class DatabaseHelper {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    // Insertar ingredientes
+  // Insert ingredients
     for (var entry in meal.ingredients.entries) {
       await db.insert('favorite_ingredients', {
         'mealId': meal.id,
@@ -290,7 +290,7 @@ class DatabaseHelper {
     return favorites;
   }
 
-  // RECETAS DEL USUARIO
+  // USER RECIPES
   Future<String> addUserRecipe(Map<String, dynamic> recipe, int userId) async {
     final db = await instance.database;
     final id = DateTime.now().millisecondsSinceEpoch.toString();
@@ -307,7 +307,7 @@ class DatabaseHelper {
       'createdAt': DateTime.now().toIso8601String(),
     });
 
-    // Insertar ingredientes
+  // Insert ingredients
     if (recipe['ingredients'] != null) {
       for (var ingredient in recipe['ingredients'] as List) {
         await db.insert('user_recipe_ingredients', {
@@ -319,7 +319,7 @@ class DatabaseHelper {
       }
     }
 
-    // Insertar pasos
+  // Insert steps
     if (recipe['steps'] != null) {
       int stepNumber = 1;
       for (var step in recipe['steps'] as List) {

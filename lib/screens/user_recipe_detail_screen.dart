@@ -82,7 +82,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
         ),
         body: const Center(
           child: Text(
-            'Receta no encontrada',
+            'Recipe not found',
             style: TextStyle(color: Colors.white38, fontSize: 16),
           ),
         ),
@@ -124,7 +124,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
                     children: [
                       Expanded(
                         child: Text(
-                          recipe!['name'] ?? 'Sin nombre',
+                          recipe!['name'] ?? 'No name',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -139,7 +139,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
-                          'Tu receta',
+                          'Your recipe',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 11,
@@ -154,19 +154,19 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
                     children: [
                       if (recipe!['time'] != null) ...[
                         Expanded(
-                          child: _buildInfoButton('Tiempo', recipe!['time']),
+                          child: _buildInfoButton('Time', recipe!['time']),
                         ),
                         const SizedBox(width: 12),
                       ],
                       if (recipe!['servings'] != null) ...[
                         Expanded(
-                          child: _buildInfoButton('Porciones', recipe!['servings']),
+                          child: _buildInfoButton('Servings', recipe!['servings']),
                         ),
                         const SizedBox(width: 12),
                       ],
                       if (recipe!['difficulty'] != null) ...[
                         Expanded(
-                          child: _buildInfoButton('Dificultad', recipe!['difficulty']),
+                          child: _buildInfoButton('Difficulty', recipe!['difficulty']),
                         ),
                       ],
                     ],
@@ -174,7 +174,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
                   const SizedBox(height: 24),
                   if (recipe!['description'] != null && recipe!['description'].toString().isNotEmpty) ...[
                     const Text(
-                      'Descripción',
+                      'Description',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -207,8 +207,8 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
                       unselectedLabelColor: Colors.white38,
                       dividerColor: Colors.transparent,
                       tabs: const [
-                        Tab(text: 'Ingredientes'),
-                        Tab(text: 'Preparación'),
+                        Tab(text: 'Ingredients'),
+                        Tab(text: 'Preparation'),
                       ],
                     ),
                   ),
@@ -269,7 +269,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
     if (ingredients.isEmpty) {
       return const Center(
         child: Text(
-          'No hay ingredientes disponibles',
+          'No ingredients available',
           style: TextStyle(color: Colors.white38),
         ),
       );
@@ -319,7 +319,7 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
     if (steps.isEmpty) {
       return const Center(
         child: Text(
-          'No hay pasos de preparación disponibles',
+          'No preparation steps available',
           style: TextStyle(color: Colors.white38),
         ),
       );

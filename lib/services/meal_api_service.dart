@@ -6,7 +6,7 @@ import '../models/category.dart';
 class MealApiService {
   static const String baseUrl = 'https://www.themealdb.com/api/json/v1/1';
 
-  // Buscar comida por nombre
+  // Search meals by name
   Future<List<Meal>> searchMealByName(String name) async {
     try {
       final response = await http.get(
@@ -23,12 +23,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error buscando comida: $e');
+  print('Error searching meals: $e');
       return [];
     }
   }
 
-  // Buscar comida por primera letra
+  // Search meals by first letter
   Future<List<Meal>> searchMealByLetter(String letter) async {
     try {
       final response = await http.get(
@@ -45,12 +45,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error buscando por letra: $e');
+  print('Error searching by letter: $e');
       return [];
     }
   }
 
-  // Obtener detalles de comida por ID
+  // Get meal details by ID
   Future<Meal?> getMealById(String id) async {
     try {
       final response = await http.get(
@@ -65,12 +65,12 @@ class MealApiService {
       }
       return null;
     } catch (e) {
-      print('Error obteniendo detalles: $e');
+  print('Error fetching details: $e');
       return null;
     }
   }
 
-  // Obtener comida aleatoria
+  // Get a random meal
   Future<Meal?> getRandomMeal() async {
     try {
       final response = await http.get(
@@ -85,12 +85,12 @@ class MealApiService {
       }
       return null;
     } catch (e) {
-      print('Error obteniendo comida aleatoria: $e');
+  print('Error fetching random meal: $e');
       return null;
     }
   }
 
-  // Obtener múltiples comidas aleatorias
+  // Get multiple random meals
   Future<List<Meal>> getRandomMeals(int count) async {
     List<Meal> meals = [];
     for (int i = 0; i < count; i++) {
@@ -102,7 +102,7 @@ class MealApiService {
     return meals;
   }
 
-  // Listar todas las categorías
+  // List all categories
   Future<List<MealCategory>> getCategories() async {
     try {
       final response = await http.get(
@@ -119,12 +119,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error obteniendo categorías: $e');
+  print('Error fetching categories: $e');
       return [];
     }
   }
 
-  // Listar ingredientes
+  // List ingredients
   Future<List<Ingredient>> getIngredients() async {
     try {
       final response = await http.get(
@@ -141,12 +141,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error obteniendo ingredientes: $e');
+  print('Error fetching ingredients: $e');
       return [];
     }
   }
 
-  // Filtrar por ingrediente principal
+  // Filter by main ingredient
   Future<List<Meal>> filterByIngredient(String ingredient) async {
     try {
       final response = await http.get(
@@ -163,12 +163,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error filtrando por ingrediente: $e');
+  print('Error filtering by ingredient: $e');
       return [];
     }
   }
 
-  // Filtrar por categoría
+  // Filter by category
   Future<List<Meal>> filterByCategory(String category) async {
     try {
       final response = await http.get(
@@ -185,12 +185,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error filtrando por categoría: $e');
+  print('Error filtering by category: $e');
       return [];
     }
   }
 
-  // Filtrar por área/país
+  // Filter by area/country
   Future<List<Meal>> filterByArea(String area) async {
     try {
       final response = await http.get(
@@ -207,12 +207,12 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error filtrando por área: $e');
+  print('Error filtering by area: $e');
       return [];
     }
   }
 
-  // Listar todas las áreas
+  // List all areas
   Future<List<String>> getAreas() async {
     try {
       final response = await http.get(
@@ -229,7 +229,7 @@ class MealApiService {
       }
       return [];
     } catch (e) {
-      print('Error obteniendo áreas: $e');
+  print('Error fetching areas: $e');
       return [];
     }
   }

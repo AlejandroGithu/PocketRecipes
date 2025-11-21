@@ -64,7 +64,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Inicia sesión para administrar favoritos'),
+            content: Text('Log in to manage favorites'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -81,7 +81,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Agregado a favoritos'),
+            content: Text('Added to favorites'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -91,7 +91,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Eliminado de favoritos'),
+            content: Text('Removed from favorites'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -128,7 +128,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
         ),
         body: const Center(
           child: Text(
-            'Receta no encontrada',
+            'Recipe not found',
             style: TextStyle(color: Colors.white38, fontSize: 16),
           ),
         ),
@@ -221,11 +221,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                   Row(
                     children: [
                       Expanded(
-                        child: _buildInfoButton('Categoría', meal!.category ?? 'N/A'),
+                        child: _buildInfoButton('Category', meal!.category ?? 'N/A'),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildInfoButton('Origen', meal!.area ?? 'N/A'),
+                        child: _buildInfoButton('Origin', meal!.area ?? 'N/A'),
                       ),
                       if (meal!.tags != null && meal!.tags!.isNotEmpty) ...[
                         const SizedBox(width: 12),
@@ -238,7 +238,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                   const SizedBox(height: 24),
                   if (meal!.instructions != null && meal!.instructions!.isNotEmpty) ...[
                     const Text(
-                      'Descripción',
+                      'Description',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -273,9 +273,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
                       unselectedLabelColor: Colors.white38,
                       dividerColor: Colors.transparent,
                       tabs: const [
-                        Tab(text: 'Ingredientes'),
-                        Tab(text: 'Preparación'),
-                        Tab(text: 'Nutrición'),
+                        Tab(text: 'Ingredients'),
+                        Tab(text: 'Preparation'),
+                        Tab(text: 'Nutrition'),
                       ],
                     ),
                   ),
@@ -335,7 +335,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
     if (meal!.ingredients.isEmpty) {
       return const Center(
         child: Text(
-          'No hay ingredientes disponibles',
+          'No ingredients available',
           style: TextStyle(color: Colors.white38),
         ),
       );
@@ -378,7 +378,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
     if (meal!.instructions == null || meal!.instructions!.isEmpty) {
       return const Center(
         child: Text(
-          'No hay instrucciones disponibles',
+          'No instructions available',
           style: TextStyle(color: Colors.white38),
         ),
       );
@@ -441,7 +441,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
       child: Padding(
         padding: EdgeInsets.all(32.0),
         child: Text(
-          'Información nutricional no disponible en la API',
+          'Nutrition information not available from the API',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white38, fontSize: 14),
         ),

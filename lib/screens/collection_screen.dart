@@ -19,8 +19,8 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
   List<Meal> favorites = [];
   List<Map<String, dynamic>> userRecipes = [];
   bool isLoading = true;
-  String userName = 'Usuario';
-  String userEmail = 'usuario@ejemplo.com';
+  String userName = 'User';
+  String userEmail = 'user@example.com';
   int? _userId;
 
   @override
@@ -41,8 +41,8 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
     if (!mounted) return;
     setState(() {
       _userId = prefs.getInt('userId');
-      userName = prefs.getString('userName') ?? 'Usuario';
-      userEmail = prefs.getString('userEmail') ?? 'usuario@ejemplo.com';
+  userName = prefs.getString('userName') ?? 'User';
+  userEmail = prefs.getString('userEmail') ?? 'user@example.com';
     });
   }
 
@@ -97,7 +97,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   Text(
-                    'Mi Colección',
+                    'My Collection',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -106,7 +106,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'Tus recetas y favoritas',
+                    'Your recipes and favorites',
                     style: TextStyle(
                       color: Colors.white38,
                       fontSize: 12,
@@ -164,7 +164,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                       _showLogoutDialog(context);
                     },
                     icon: const Icon(Icons.logout, color: Colors.white70),
-                    tooltip: 'Cerrar sesión',
+                    tooltip: 'Sign out',
                   ),
                 ],
               ),
@@ -186,9 +186,9 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                 unselectedLabelColor: Colors.white38,
                 dividerColor: Colors.transparent,
                 tabs: const [
-                  Tab(text: 'Mis recetas'),
-                  Tab(text: 'Favoritos'),
-                  Tab(text: 'Guardados'),
+                  Tab(text: 'My Recipes'),
+                  Tab(text: 'Favorites'),
+                  Tab(text: 'Saved'),
                 ],
               ),
             ),
@@ -198,11 +198,11 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildCounter(userRecipes.length.toString(), 'Recetas'),
+                    child: _buildCounter(userRecipes.length.toString(), 'Recipes'),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildCounter(favorites.length.toString(), 'Favoritos'),
+                    child: _buildCounter(favorites.length.toString(), 'Favorites'),
                   ),
                 ],
               ),
@@ -225,7 +225,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         onPressed: () {
           if (_userId == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Inicia sesión para agregar recetas')),
+              const SnackBar(content: Text('Log in to add recipes')),
             );
             return;
           }
@@ -234,7 +234,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         backgroundColor: Colors.white,
         icon: const Icon(Icons.add, color: Colors.black),
         label: const Text(
-          'Agregar nueva receta',
+          'Add new recipe',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
         ),
       ),
@@ -248,17 +248,17 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2A2A2A),
         title: const Text(
-          '¿Cerrar sesión?',
+          'Sign out?',
           style: TextStyle(color: Colors.white),
         ),
         content: const Text(
-          '¿Estás seguro que deseas cerrar sesión?',
+          'Are you sure you want to sign out?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white38)),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -273,7 +273,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Cerrar sesión'),
+            child: const Text('Sign out'),
           ),
         ],
       ),
@@ -317,7 +317,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         child: Padding(
           padding: EdgeInsets.all(32.0),
           child: Text(
-            'Inicia sesión para ver tus recetas',
+            'Log in to see your recipes',
             style: TextStyle(color: Colors.white38, fontSize: 16),
           ),
         ),
@@ -333,7 +333,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         child: Padding(
           padding: EdgeInsets.all(32.0),
           child: Text(
-            'No tienes recetas publicadas aún',
+            'You haven\'t published any recipes yet',
             style: TextStyle(color: Colors.white38, fontSize: 16),
           ),
         ),
@@ -356,7 +356,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         child: Padding(
           padding: EdgeInsets.all(32.0),
           child: Text(
-            'Inicia sesión para ver tus favoritos',
+            'Log in to see your favorites',
             style: TextStyle(color: Colors.white38, fontSize: 16),
           ),
         ),
@@ -372,7 +372,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
         child: Padding(
           padding: EdgeInsets.all(32.0),
           child: Text(
-            'No tienes recetas favoritas aún',
+            'You don\'t have favorite recipes yet',
             style: TextStyle(color: Colors.white38, fontSize: 16),
           ),
         ),
@@ -394,7 +394,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
       child: Padding(
         padding: EdgeInsets.all(32.0),
         child: Text(
-          'Próximamente: Recetas guardadas',
+          'Coming soon: Saved recipes',
           style: TextStyle(color: Colors.white38, fontSize: 16),
         ),
       ),
@@ -406,7 +406,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
 
     return GestureDetector(
       onTap: () {
-        // Navegar a la pantalla de detalle de receta de usuario
+        // Navigate to the user recipe detail screen
         Navigator.of(context).pushNamed(
           '/user-recipe-detail',
           arguments: {'recipeId': recipe['id']},
@@ -456,7 +456,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
-                  'Tu receta',
+                  'Your recipe',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 11,
@@ -490,7 +490,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    recipe['name'] ?? 'Sin nombre',
+                    recipe['name'] ?? 'No name',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -499,7 +499,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    recipe['description'] ?? 'Sin descripción',
+                    recipe['description'] ?? 'No description',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -609,7 +609,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    meal.category ?? 'Sin categoría',
+                    meal.category ?? 'No category',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -623,7 +623,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                       const Icon(Icons.public, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
                       Text(
-                        meal.area ?? 'Internacional',
+                        meal.area ?? 'International',
                         style: const TextStyle(color: Colors.white70, fontSize: 11),
                       ),
                     ],
@@ -643,17 +643,17 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2A2A2A),
         title: const Text(
-          '¿Eliminar receta?',
+          'Delete recipe?',
           style: TextStyle(color: Colors.white),
         ),
         content: const Text(
-          'Esta acción no se puede deshacer',
+          'This action cannot be undone',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white38)),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white38)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -661,7 +661,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
                 Navigator.pop(context);
                 if (!mounted) return;
                 ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(content: Text('Inicia sesión para eliminar recetas')),
+                  const SnackBar(content: Text('Log in to delete recipes')),
                 );
                 return;
               }
@@ -682,7 +682,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
               _loadData();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Receta eliminada')),
+                  const SnackBar(content: Text('Recipe deleted')),
                 );
               }
             },
@@ -690,7 +690,7 @@ class _CollectionScreenState extends State<CollectionScreen> with SingleTickerPr
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Eliminar'),
+            child: const Text('Delete'),
           ),
         ],
       ),

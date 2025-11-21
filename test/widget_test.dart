@@ -12,9 +12,9 @@ void main() {
   testWidgets('Login screen renders expected elements', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-  expect(find.text('POCKET RECIPES'), findsOneWidget);
-  expect(find.text('Iniciar Sesión'), findsOneWidget);
-  expect(find.text('Email'), findsWidgets);
-  expect(find.text('Contraseña'), findsWidgets);
+    expect(find.text('POCKET RECIPES'), findsOneWidget);
+    expect(find.text('Log In'), findsOneWidget);
+    expect(find.text('Email'), findsWidgets);
+    expect(find.text('Password'), findsWidgets);
   });
 }

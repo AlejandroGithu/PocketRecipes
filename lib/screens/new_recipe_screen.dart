@@ -36,13 +36,13 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     'mg',
     'ml',
     'l',
-    'taza',
-    'cucharada',
-    'cucharadita',
-    'pieza',
-    'porción',
+    'cup',
+    'tablespoon',
+    'teaspoon',
+    'piece',
+    'serving',
   ];
-  String _selectedDifficulty = 'Facil';
+  String _selectedDifficulty = 'Easy';
   String _selectedUnit = 'g';
   File? _selectedImage;
 
@@ -68,14 +68,14 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
 
     if (name.length < 3) {
       setState(() {
-        _ingredientError = 'El nombre del ingrediente debe tener al menos 3 letras';
+  _ingredientError = 'Ingredient name must be at least 3 letters';
       });
       return;
     }
 
     if (quantity.isEmpty) {
       setState(() {
-        _ingredientError = 'Ingresa la cantidad utilizando solo números';
+  _ingredientError = 'Enter the quantity using numbers only';
       });
       return;
     }
@@ -99,7 +99,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
 
     if (stepText.isEmpty) {
       setState(() {
-        _formError = 'Ingresa la descripción del paso antes de agregarlo.';
+  _formError = 'Enter a step description before adding it.';
       });
       return;
     }
@@ -150,7 +150,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo cargar la imagen: $e')),
+  SnackBar(content: Text('Could not load the image: $e')),
       );
     }
   }
@@ -166,15 +166,15 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
 
     if (name.length < 3) {
       setState(() {
-        _formError = 'El nombre de la receta debe tener al menos 3 caracteres.';
+  _formError = 'Recipe name must be at least 3 characters long.';
       });
       return;
     }
 
     if (servingsText.isEmpty) {
       setState(() {
-        _servingsError = 'Ingresa la cantidad de porciones';
-        _formError = 'Corrige los campos resaltados antes de continuar.';
+  _servingsError = 'Enter the number of servings';
+  _formError = 'Fix the highlighted fields before continuing.';
       });
       return;
     }
@@ -182,22 +182,22 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     final servingsValue = int.tryParse(servingsText);
     if (servingsValue == null || servingsValue <= 0) {
       setState(() {
-        _servingsError = 'Ingresa un número válido de porciones';
-        _formError = 'Corrige los campos resaltados antes de continuar.';
+  _servingsError = 'Enter a valid number of servings';
+  _formError = 'Fix the highlighted fields before continuing.';
       });
       return;
     }
 
     if (_ingredients.isEmpty) {
       setState(() {
-        _formError = 'Agrega al menos un ingrediente antes de publicar.';
+  _formError = 'Add at least one ingredient before publishing.';
       });
       return;
     }
 
     if (_steps.isEmpty) {
       setState(() {
-        _formError = 'Agrega al menos un paso de preparación.';
+  _formError = 'Add at least one preparation step.';
       });
       return;
     }
@@ -208,7 +208,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     if (userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inicia sesión para publicar recetas')),
+          const SnackBar(content: Text('Log in to publish recipes')),
         );
       }
       return;
@@ -228,7 +228,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Receta publicada exitosamente')),
+          const SnackBar(content: Text('Recipe published successfully')),
         );
         setState(() {
           _formError = null;
@@ -238,7 +238,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al publicar receta: $e')),
+          SnackBar(content: Text('Error publishing recipe: $e')),
         );
       }
     }
@@ -258,7 +258,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Nueva Receta',
+              'New Recipe',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -266,7 +266,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               ),
             ),
             Text(
-              'Comparte tu creación',
+              'Share your creation',
               style: TextStyle(
                 color: Colors.white38,
                 fontSize: 12,
@@ -280,7 +280,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Área de subir foto
+            // Photo upload area
             GestureDetector(
               onTap: _pickImage,
               child: Container(
@@ -311,7 +311,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                         child: Padding(
                           padding: EdgeInsets.only(bottom: 16),
                           child: Text(
-                            'Toca para subir foto (JPG o PNG)',
+                            'Tap to upload photo (JPG or PNG)',
                             style: TextStyle(color: Colors.white38, fontSize: 14),
                           ),
                         ),
@@ -327,7 +327,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Text(
-                            'Toca para cambiar foto',
+                            'Tap to change photo',
                             style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ),
@@ -337,9 +337,9 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            // Nombre de la receta
+            // Recipe name
             const Text(
-              'Nombre de la receta',
+              'Recipe name',
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 8),
@@ -347,7 +347,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               controller: _nameController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Ej: Pasta Carbonara Clasica',
+                hintText: 'Ex: Classic Carbonara Pasta',
                 hintStyle: const TextStyle(color: Colors.white24),
                 filled: true,
                 fillColor: const Color(0xFF2A2A2A),
@@ -362,9 +362,9 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            // Descripción
+            // Description
             const Text(
-              'Descripción',
+              'Description',
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 8),
@@ -373,7 +373,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               maxLines: 4,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Describe tu receta...',
+                hintText: 'Describe your recipe...',
                 hintStyle: const TextStyle(color: Colors.white24),
                 filled: true,
                 fillColor: const Color(0xFF2A2A2A),
@@ -388,7 +388,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            // Tiempo, Porciones, Dificultad
+            // Time, Servings, Difficulty
             Row(
               children: [
                 Expanded(
@@ -396,7 +396,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Tiempo',
+                        'Time',
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
@@ -427,7 +427,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Porciones',
+                        'Servings',
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
@@ -461,7 +461,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Dificultad',
+                        'Difficulty',
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
@@ -478,7 +478,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                           dropdownColor: const Color(0xFF2A2A2A),
                           underline: const SizedBox(),
                           style: const TextStyle(color: Colors.white),
-                          items: ['Facil', 'Medio', 'Dificil'].map((String value) {
+                          items: ['Easy', 'Medium', 'Hard'].map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -497,9 +497,9 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            // Ingredientes
+            // Ingredients
             const Text(
-              'Ingredientes',
+              'Ingredients',
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -510,7 +510,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     controller: _ingredientNameController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Ej: Pasta Spaguetti',
+                      hintText: 'Ex: Spaghetti pasta',
                       hintStyle: const TextStyle(color: Colors.white24),
                       filled: true,
                       fillColor: const Color(0xFF2A2A2A),
@@ -534,7 +534,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      hintText: 'Cant.',
+                      hintText: 'Qty.',
                       hintStyle: const TextStyle(color: Colors.white24),
                       filled: true,
                       fillColor: const Color(0xFF2A2A2A),
@@ -591,11 +591,11 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               onPressed: _addIngredient,
               icon: const Icon(Icons.add, color: Colors.white70),
               label: const Text(
-                '+ Agregar Ingrediente',
+                '+ Add Ingredient',
                 style: TextStyle(color: Colors.white70),
               ),
             ),
-            // Lista de ingredientes agregados
+            // List of added ingredients
             if (_ingredients.isNotEmpty) ...[
               const SizedBox(height: 8),
               ..._ingredients.asMap().entries.map((entry) {
@@ -627,9 +627,9 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               }),
             ],
             const SizedBox(height: 24),
-            // Pasos de preparación
+            // Preparation steps
             const Text(
-              'Pasos de preparación',
+              'Preparation steps',
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -658,7 +658,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     style: const TextStyle(color: Colors.white),
                     maxLines: 2,
                     decoration: InputDecoration(
-                      hintText: 'Ej: Hervir agua con sal',
+                      hintText: 'Ex: Boil salted water',
                       hintStyle: const TextStyle(color: Colors.white24),
                       filled: true,
                       fillColor: const Color(0xFF2A2A2A),
@@ -680,11 +680,11 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               onPressed: _addStep,
               icon: const Icon(Icons.add, color: Colors.white70),
               label: const Text(
-                '+ Agregar Paso',
+                '+ Add Step',
                 style: TextStyle(color: Colors.white70),
               ),
             ),
-            // Lista de pasos agregados
+            // List of added steps
             if (_steps.isNotEmpty) ...[
               const SizedBox(height: 8),
               ..._steps.asMap().entries.map((entry) {
@@ -743,7 +743,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            // Botones de acción
+            // Action buttons
             Row(
               children: [
                 Expanded(
@@ -759,7 +759,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                       ),
                     ),
                     child: const Text(
-                      'Cancelar',
+                      'Cancel',
                       style: TextStyle(color: Colors.white70),
                     ),
                   ),
@@ -776,7 +776,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                       ),
                     ),
                     child: const Text(
-                      'Publicar',
+                      'Publish',
                       style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
                     ),
                   ),
