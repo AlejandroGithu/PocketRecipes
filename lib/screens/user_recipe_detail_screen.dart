@@ -276,7 +276,8 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
     }
 
     return ListView(
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 16),
+      physics: const BouncingScrollPhysics(),
       children: ingredients
           .map((ing) => _buildIngredientItem(
                 ing['ingredient'] as String,
@@ -326,7 +327,8 @@ class _UserRecipeDetailScreenState extends State<UserRecipeDetailScreen> with Si
     }
 
     return ListView(
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 16),
+      physics: const BouncingScrollPhysics(),
       children: steps
           .asMap()
           .entries

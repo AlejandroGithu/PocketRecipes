@@ -47,6 +47,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
   File? _selectedImage;
 
   String? _ingredientError;
+  String? _timeError;
   String? _servingsError;
   String? _formError;
 
@@ -157,16 +158,35 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
 
   Future<void> _publishRecipe() async {
     final name = _nameController.text.trim();
+    final timeText = _timeController.text.trim();
     final servingsText = _servingsController.text.trim();
 
     setState(() {
       _formError = null;
+      _timeError = null;
       _servingsError = null;
     });
 
     if (name.length < 3) {
       setState(() {
   _formError = 'Recipe name must be at least 3 characters long.';
+      });
+      return;
+    }
+
+    if (timeText.isEmpty) {
+      setState(() {
+        _timeError = 'Enter the preparation time in minutes';
+        _formError = 'Fix the highlighted fields before continuing.';
+      });
+      return;
+    }
+
+    final timeValue = int.tryParse(timeText);
+    if (timeValue == null || timeValue <= 0) {
+      setState(() {
+        _timeError = 'Enter a valid number of minutes';
+        _formError = 'Fix the highlighted fields before continuing.';
       });
       return;
     }
@@ -219,7 +239,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
         'imageUrl': _selectedImage?.path,
-        'time': _timeController.text.trim(),
+        'time': '$timeValue min',
         'servings': _servingsController.text.trim(),
         'difficulty': _selectedDifficulty,
         'ingredients': _ingredients,
@@ -396,16 +416,20 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Time',
+                        'Time (minutes)',
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _timeController,
                         style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         decoration: InputDecoration(
-                          hintText: '30 min',
+                          hintText: '30',
                           hintStyle: const TextStyle(color: Colors.white24),
+                          errorText: _timeError,
+                          suffixText: 'min',
                           filled: true,
                           fillColor: const Color(0xFF2A2A2A),
                           border: OutlineInputBorder(

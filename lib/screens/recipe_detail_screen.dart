@@ -342,7 +342,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
     }
 
     return ListView(
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 16),
+      physics: const BouncingScrollPhysics(),
       children: meal!.ingredients.entries
           .map((entry) => _buildIngredientItem(entry.key, entry.value))
           .toList(),
@@ -387,7 +388,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
     final steps = meal!.getInstructionSteps();
     
     return ListView(
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 16),
+      physics: const BouncingScrollPhysics(),
       children: steps
           .asMap()
           .entries
