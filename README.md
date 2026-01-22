@@ -40,5 +40,3 @@ Navegación relevante:
 - `/register` → `RegisterScreen`
 - `/home` → `HomeScreen`
 - `/recipe` → `RecipeDetailScreen` (usa `arguments` para título/id)
-
-"# proyectofinal-pocket-recipies" 
